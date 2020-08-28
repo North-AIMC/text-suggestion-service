@@ -1,47 +1,50 @@
-class NorthPipeline(object):
+from numpy import argsort
+from transformers import pipeline
+from pipelines.vocabs.words import words
+import random
+
+class CompletionsWithPredictionWithSentsPipeline(object): # This will become
     def __init__(self):
-        self.firstWordSuggestions = ['The','I','This']
+        self.pos_words = [s.lower() for s in words['neu']+words['pos']]
+        self.neg_words = [s.lower() for s in words['neu']+words['neg']]
+        pipe_spec = {
+            'model': 'distilbert-base-uncased',
+            'topk':20,
+        }
+        self.pipe = pipeline('fill-mask', **pipe_spec)
+        self.mask = self.pipe.tokenizer.mask_token
 
-    def get_suggestions(self, text_data):
-        # Extract the input text from the text_data
-        input_text = text_data['input_text']
-
-        # Text-based Router
-        if(input_text==''):
-            suggestions = self.firstWordSuggestions
+    def get_suggestions(self, text, group):
+        if(group=='1'):
+            return(self._get_completions(text,self.pos_words))
+        elif(group=='-1'):
+            return(self._get_completions(text,self.neg_words))
         else:
-            if('sentiment_bias' in text_data):
-                if(text_data['sentiment_bias']=='1'):
-                    suggestions = ['This','is','positive']
-                elif(text_data['sentiment_bias']=='-1'):
-                    suggestions = ['This','is','negative']
-                else:
-                    suggestions = ['','','']
+            if(random.sample(['1','-1'], 1)=='1'):
+                self._get_completions(text,self.pos_words)
             else:
-                suggestions = ['','','']
-        return({'suggestions': suggestions})
+                self._get_completions(text,self.neg_words)
+            return(['','',''])
 
-class TestRouterPipeline(object):
-    def __init__(self):
-        pass
-
-    def get_suggestions(self, text_data):
-        # Sometime generalise to more general routers
-        if('sentiment_bias' in text_data):
-            if(text_data['sentiment_bias']=='1'):
-                suggestions = ['This','is','positive']
-            elif(text_data['sentiment_bias']=='-1'):
-                suggestions = ['This','is','negative']
-            else:
-                suggestions = ['','','']
+    def _get_completions(self, text, words):
+        if(text==''):
+            return([s.capitalize() for s in words[:3]])
+        elif(text[-1]!=' '):
+            currentWord = text.rsplit(' ', 1)[-1]
+            isCapitalised = False if currentWord=='' else currentWord[0].isupper()
+            valid = [w for w in words if w.startswith(currentWord.lower())]
+            if(isCapitalised):
+                valid = [s.capitalize() for s in valid]
+            if(len(valid)<3):
+                valid += ['']*(3 - len(valid))
+            return(valid[:3])
         else:
-            suggestions = ['','','']
-        return({'suggestions': suggestions})
-
-
-class TestPipeline(object):
-    def __init__(self):
-        pass
-
-    def get_suggestions(self, text_data):
-        return({'suggestions': ['This','is','Test']})
+            text = text.rsplit('.', 1)[-1].lstrip()
+            if(text==''):
+                return([s.capitalize() for s in words[:3]])
+            else:
+                masked_text = f'{text.strip()} {self.mask}.'
+                valid = [s['token_str'] for s in self.pipe(masked_text) if not s['token_str'].startswith('##')]
+                if(len(valid)<3):
+                    valid += ['']*(3 - len(valid))
+                return(valid[:3])

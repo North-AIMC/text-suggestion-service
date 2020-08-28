@@ -1,9 +1,9 @@
 from flask import Flask, request
 from flask import jsonify
 import json
-from pipelines.main import NorthPipeline
+from pipelines.main import CompletionsWithPredictionWithSentsPipeline
 
-pipeline = NorthPipeline()
+pipeline = CompletionsWithPredictionWithSentsPipeline()
 
 app = Flask(__name__)
 
@@ -26,7 +26,9 @@ def hello():
 @app.route('/get_text_suggestions', methods=['POST'])
 def get_text_suggestions_():
     try:
-        res = pipeline.get_suggestions(request.json)
+        text = request.json['input_text']
+        group = request.json['sentiment_bias']
+        res = {'suggestions':pipeline.get_suggestions(text,group)}
         return app.response_class(response=json.dumps(res),
             status=200, mimetype='application/json')
     except Exception as error:
@@ -40,3 +42,4 @@ if __name__ == '__main__':
 
 #curl -X POST "https://python-dot-north-aimc.nw.r.appspot.com/get_text_suggestions" -H "Content-Type: application/json" -d "{\"input_text\":\"This is \",\"sentiment_bias\":\"1\"}"
 #curl -X POST "http://0.0.0.0:8080/get_text_suggestions" -H "Content-Type: application/json" -d "{\"input_text\":\"This is \",\"sentiment_bias\":\"1\"}"
+#curl -X POST "http://127.0.0.1:5000/get_text_suggestions" -H "Content-Type: application/json" -d "{\"input_text\":\"This is \",\"sentiment_bias\":\"1\"}"
