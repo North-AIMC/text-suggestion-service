@@ -1,9 +1,17 @@
 from flask import Flask, request
 from flask import jsonify
 import json
-from pipelines.main import CompletionsWithPredictionWithSentsPipeline
+from pipelines.main import LangModelPipeline
 
-pipeline = CompletionsWithPredictionWithSentsPipeline()
+
+pipe_params = {
+        'model_name': 'roberta-base',
+        'topK_for_completions': 10000,
+        'topK_for_biasing': 10,
+        'split_sents': True
+}
+
+pipeline = LangModelPipeline(**pipe_params)
 
 app = Flask(__name__)
 
