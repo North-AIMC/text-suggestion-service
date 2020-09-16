@@ -5,7 +5,7 @@ from pipelines.main import LangModelPipeline
 
 
 pipe_params = {
-        'model_name': 'roberta-base',
+        'model_name': 'bert-base-uncased',
         'topK_for_completions': 10000,
         'topK_for_biasing': 10,
         'split_sents': True

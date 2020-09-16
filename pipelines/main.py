@@ -5,6 +5,7 @@ import random
 import nltk
 from transformers import AutoTokenizer, AutoModelForMaskedLM
 from pipelines.vocabs.words import words
+from pipelines.vocabs.contractions import contractions
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 nltk.download('vader_lexicon')
 
@@ -21,8 +22,8 @@ class LangModelPipeline(object):
         self.model = AutoModelForMaskedLM.from_pretrained(self.model_name).eval()
 
         # Load first word suggestions (easy to change vocabulary and ranking)
-        self.pos_words = [s.lower() for s in words['neu']+words['pos']]
-        self.neg_words = [s.lower() for s in words['neu']+words['neg']]
+        self.pos_words = [s.lower() for s in words['neu']+words['pos']] + contractions
+        self.neg_words = [s.lower() for s in words['neu']+words['neg']] + contractions
 
         # Pre-compute sentiment scores(???)
         self.scorer = SentimentIntensityAnalyzer()
@@ -36,11 +37,7 @@ class LangModelPipeline(object):
         elif(group=='-1'):
             return(self._get_valid_suggestions(text, self.neg_words, -1))
         else:
-            if(random.sample(['1','-1'], 1)=='1'):
-                self._get_valid_suggestions(text, self.pos_words, 1)
-            else:
-                self._get_valid_suggestions(text, self.neg_words, -1)
-            return(['','',''])
+            return(self._get_valid_suggestions(text, self.neg_words, 0))
 
     def _get_valid_suggestions(self, text, first_words, sentiment_bias):
         # If specified, only use last sentence
@@ -90,7 +87,7 @@ class LangModelPipeline(object):
             currentWord = text.rsplit(' ', 1)[-1]
 
             # Get valid predictions
-            valid = [w for w in predictions if w.startswith(currentWord.lower())]
+            valid = [w for w in predictions + contractions if w.startswith(currentWord.lower())]
 
             # Get topK_for_biasing and rank by sentiment (could be cleaned up)
             ranked = self._bias_suggestions(valid[:self.topK_for_biasing], sentiment_bias)
@@ -120,13 +117,16 @@ class LangModelPipeline(object):
         # Get topK_ids for next word
         topK_ids = output[0][0,mask_idx,:].topk(topK).indices.tolist()
 
+        # Convert back to tokens and remove any sub-tokens
+        valid = [t for t in self.tokenizer.convert_ids_to_tokens(topK_ids) if not t.startswith('##')]
+
         # Decode back tokens (NB: Make ids_to_tokens...)
-        return(self.tokenizer.decode(topK_ids).split())
+        return(valid)
 
 
     def _format_valid_suggestions(self, valid, isCapitalised):
         # Remove any subtokens
-        valid = [s for s in valid if not s.startswith('##')]
+        #valid = [s for s in valid if not s.startswith('##')]
 
         # Ensure 3, and only 3, suggestions are returned
         if(len(valid)<3):
