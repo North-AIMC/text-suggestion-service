@@ -8,7 +8,8 @@ pipe_params = {
         'model_name': 'bert-base-uncased',
         'topK_for_completions': 10000,
         'topK_for_biasing': 10,
-        'split_sents': True
+        'split_sents': True,
+        'contraction_action': True
 }
 
 pipeline = LangModelPipeline(**pipe_params)
