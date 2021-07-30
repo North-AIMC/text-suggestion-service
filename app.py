@@ -2,8 +2,15 @@ from flask import Flask, request
 from flask import jsonify
 import json
 from pipelines.main import LangModelPipeline
+import google.cloud.logging
+import logging
 
+# Setup logging
+client = google.cloud.logging.Client()
+client.get_default_handler()
+client.setup_logging()
 
+# Setup text suggestion pipeline
 pipe_params = {
         'model_name': 'bert-base-uncased',
         'topK_for_completions': 10000,
@@ -11,9 +18,9 @@ pipe_params = {
         'split_sents': True,
         'contraction_action': True
 }
-
 pipeline = LangModelPipeline(**pipe_params)
 
+# Setup text suggestion service
 app = Flask(__name__)
 
 # Needed to add CORS support
@@ -32,12 +39,26 @@ def hello():
     dictionary = {'message': 'Hello from North AIMC!'}
     return jsonify(dictionary)
 
+@app.route('/post_log', methods=['POST'])
+def post_log_():
+    try:
+        # Log event data
+        logging.info(json.dumps(request.json))
+        res = {'message':'event data logged'}
+        return app.response_class(response=json.dumps(res),
+            status=200, mimetype='application/json')
+    except Exception as error:
+        err = str(error)
+        return app.response_class(response=json.dumps(err),
+            status=500, mimetype='application/json')
+
 @app.route('/get_text_suggestions', methods=['POST'])
 def get_text_suggestions_():
     try:
         text = request.json['input_text']
         group = request.json['sentiment_bias']
         res = {'suggestions':pipeline.get_suggestions(text,group)}
+        # Log request data and response data
         return app.response_class(response=json.dumps(res),
             status=200, mimetype='application/json')
     except Exception as error:
