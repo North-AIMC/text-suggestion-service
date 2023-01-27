@@ -8,7 +8,7 @@
 * Parameters fine-tuned using custom [simulation environment](https://github.com/North-AIMC/text-suggestion-experiments/blob/master/evaluation.py)
 * Cloud resources decided using [LOCUST](https://locust.io/) load testing
 
-Motivation for the services can be found in the related [paper](https://aclanthology.org/2021.hcinlp-1.17.pdf).
+Motivation for the service can be found in the related [paper](https://aclanthology.org/2021.hcinlp-1.17.pdf).
 
 ## Run locally or deploy the app to GCP
 Setup virtual environment:
