@@ -2,7 +2,7 @@
 
 * Python (Flask) application text-suggestion service
 * Deployable to Google Cloud Platform App Engine
-* Delivers current/next word suggestions based given text
+* Delivers current/next word suggestions based on given text
 * Text suggestions are *biased* using sentiment-based re-ranking
 
 More details can be found in the related [paper](https://aclanthology.org/2021.hcinlp-1.17.pdf).
