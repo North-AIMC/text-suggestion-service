@@ -1,8 +1,10 @@
 # Biased Text Suggestion Service
+
 * Python (Flask) application text-suggestion service
 * Deployable to Google Cloud Platform App Engine
-* Deliver current/next word suggestions based given text
-* *Importantly*, text suggestions are biased based on sentiment
+* Delivers current/next word suggestions based given text
+* Text suggestions are *biased* using sentiment-based re-ranking
+
 More details can be found in the related [paper](https://aclanthology.org/2021.hcinlp-1.17.pdf).
 
 ## Run locally or deploy the app to GCP
