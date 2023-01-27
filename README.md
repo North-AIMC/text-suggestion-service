@@ -1,4 +1,4 @@
-# Run locally or deploy the app to GCP
+# (Biased) Text Suggestion Service
 
 * Python (Flask) application text-suggestion service
 * Deployable to Google Cloud Platform App Engine
