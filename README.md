@@ -4,7 +4,8 @@
 * Deployable to Google Cloud Platform App Engine
 * Delivers current/next word suggestions based on given text
 * Underlying Language Model loaded from Hugging Face [models](https://huggingface.co/models)
-* Text suggestions *biased* using sentiment-based re-ranking
+* Text suggestions *biased* using "sentiment-based re-ranking"
+* Delivers "treatment" type based on user group data (in request)
 * Parameters fine-tuned using custom [simulation environment](https://github.com/North-AIMC/text-suggestion-experiments/blob/master/evaluation.py)
 * Cloud resources decided using [LOCUST](https://locust.io/) load testing
 
